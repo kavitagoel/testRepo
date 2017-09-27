@@ -1,0 +1,1932 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no"
+    name="listenandretweet.ListenAndRetweet" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/20160309110033"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:ns="http://www.tibco.com/pe/EngineTypes"
+    xmlns:ns0="http://www.tibco.com/namespaces/tnt/plugins/twitter+26ef04e7-7cab-4fde-b41c-bba31cf51d86+Output"
+    xmlns:ns1="www.tibco.com/plugin/java/JavaMethodActivityInput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityInput"
+    xmlns:ns2="www.tibco.com/plugin/java/JavaMethodActivityOutput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityOutput"
+    xmlns:ns3="http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Input"
+    xmlns:ns4="http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Output"
+    xmlns:ns5="http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Input"
+    xmlns:ns6="http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Output"
+    xmlns:ns7="http://www.tibco.com/namespaces/tnt/plugins/file"
+    xmlns:sca="http://docs.oasis-open.org/ns/opencsa/sca/200912"
+    xmlns:sca-bpel="http://docs.oasis-open.org/ns/opencsa/sca-bpel/200801"
+    xmlns:tibex="http://www.tibco.com/bpel/2007/extensions"
+    xmlns:tibprop="http://ns.tibco.com/bw/property" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <tibex:Types>
+        <xs:schema attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            targetNamespace="http://www.tibco.com/pe/EngineTypes"
+            xmlns:tns="http://www.tibco.com/pe/EngineTypes" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:complexType block="extension restriction"
+                final="extension restriction" name="ErrorReport">
+                <xs:sequence>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="StackTrace" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="Msg" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="FullClass" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="Class" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="ProcessStack" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" minOccurs="0" name="MsgCode" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" minOccurs="0" name="Data" type="tns:anydata"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType block="extension restriction"
+                final="extension restriction" name="FaultDetail">
+                <xs:sequence>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="ActivityName" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" minOccurs="0" name="Data" type="tns:anydata"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="Msg" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="MsgCode" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="ProcessStack" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="StackTrace" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType block="extension restriction"
+                final="extension restriction" name="ProcessContext">
+                <xs:sequence>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="JobId" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" name="ProcessInstanceId" type="xs:string"/>
+                    <xs:element
+                        block="extension restriction substitution"
+                        form="unqualified" minOccurs="0"
+                        name="CustomJobId" type="xs:string"/>
+                    <!--xs:element name="RestartedFromCheckpoint" form="unqualified" block="extension restriction substitution" type="xs:boolean"/-->
+                    <!--xs:element minOccurs="0" maxOccurs="unbounded" name="TrackingInfo" form="unqualified" block="extension restriction substitution" type="xs:string"/-->
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType block="extension restriction"
+                final="extension restriction" name="anydata">
+                <xs:sequence>
+                    <xs:any namespace="##any" processContents="lax"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element block="extension restriction substitution"
+                final="extension restriction" name="ErrorReport" type="tns:ErrorReport"/>
+            <xs:element block="extension restriction substitution"
+                final="extension restriction" name="FaultDetail" type="tns:FaultDetail"/>
+            <xs:element block="extension restriction substitution"
+                final="extension restriction" name="ProcessContext" type="tns:ProcessContext"/>
+            <xs:element block="extension restriction substitution"
+                final="extension restriction" name="CorrelationValue" type="xs:string"/>
+        </xs:schema>
+        <schema attributeFormDefault="unqualified"
+            elementFormDefault="unqualified"
+            targetNamespace="http://schemas.tibco.com/bw/pe/plugin/5.0/exceptions"
+            version="" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.tibco.com/bw/pe/plugin/5.0/exceptions">
+            <complexType name="ActivityExceptionType">
+                <sequence>
+                    <element name="msg" type="string"/>
+                    <element minOccurs="0" name="msgCode" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="ActivityException" type="tns:ActivityExceptionType"/>
+            <complexType name="ActivityTimedOutExceptionType">
+                <complexContent>
+                    <extension base="tns:ActivityExceptionType"/>
+                </complexContent>
+            </complexType>
+            <element name="ActivityTimedOutException" type="tns:ActivityTimedOutExceptionType"/>
+        </schema>
+        <xs:schema
+            targetNamespace="http://www.tibco.com/namespaces/tnt/plugins/twitter+26ef04e7-7cab-4fde-b41c-bba31cf51d86+Output"
+            version="1.0"
+            xmlns:Q1="http://www.tibco.com/namespaces/tnt/plugins/twitter+26ef04e7-7cab-4fde-b41c-bba31cf51d86+Output" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="PublicStream">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="UserStream">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="DirectMessage" type="Q1:DirectMessage"/>
+                        <xs:element minOccurs="0" name="Status" type="Q1:Status"/>
+                        <xs:element minOccurs="0" name="User" type="Q1:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="SiteStream">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0"
+                            name="Status" type="Q1:Status"/>
+                        <xs:element maxOccurs="unbounded" minOccurs="0"
+                            name="User" type="Q1:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="Status">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="contributors" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="contributorsIDs" type="xs:long"/>
+                    <xs:element minOccurs="0" name="createdAt" type="xs:string"/>
+                    <xs:element minOccurs="0" name="favorited" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="fromUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="geoLocation" type="Q1:GeoLocation"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="hashtagEntities" type="Q1:HashTagEntities"/>
+                    <xs:element minOccurs="1" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="idAsString" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToScreenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToStatusId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="inReplyToUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="isFavorited" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isoLanguageCode" type="xs:string"/>
+                    <xs:element minOccurs="0" name="isTruncated" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="location" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="mediaEntities" type="Q1:MediaEntity"/>
+                    <xs:element minOccurs="0" name="myRetweetedStatus" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="place" type="Q1:Place"/>
+                    <xs:element minOccurs="0" name="profileImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="retweet" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="retweetCount" type="xs:long"/>
+                    <xs:element minOccurs="0" name="retweetedByMe" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="retweetedStatus" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="source" type="xs:string"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                    <xs:element minOccurs="0" name="toUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="truncated" type="xs:boolean"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="URLEntities" type="Q1:URLEntity"/>
+                    <xs:element minOccurs="0" name="user" type="Q1:User"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="userMentionEntities" type="Q1:UserMentionedEntity"/>
+                    <xs:element minOccurs="0" name="wasRetweetedByMe" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeoLocation">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="latitude" type="xs:double"/>
+                    <xs:element minOccurs="1" name="longitude" type="xs:double"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="HashTagEntities">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="Place">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="boundingBoxCoordinates" type="Q1:GeolocationArray"/>
+                    <xs:element minOccurs="0" name="boundingBoxType" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="containedWithIn" type="Q1:Place"/>
+                    <xs:element minOccurs="0" name="country" type="xs:string"/>
+                    <xs:element minOccurs="0" name="countryCode" type="xs:string"/>
+                    <xs:element minOccurs="0" name="fullName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="geometrycordinates" type="Q1:GeolocationArray"/>
+                    <xs:element minOccurs="0" name="geometryType" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0" name="placeType" type="xs:string"/>
+                    <xs:element minOccurs="0" name="streetAddress" type="xs:string"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DirectMessage">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="createdAt" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:string"/>
+                    <xs:element minOccurs="0" name="recipient" type="Q1:User"/>
+                    <xs:element minOccurs="0" name="recipientId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="recipientScreenName" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="sender" type="Q1:User"/>
+                    <xs:element minOccurs="0" name="senderId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="senderScreenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeolocationArray">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="item" type="Q1:GeoLocation"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="MediaEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="displayURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="expandedURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="mediaURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="mediaURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0" name="sizes" type="xs:int"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="type"
+                        nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="URLEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="displayURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="expandedURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="UserMentionedEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="User">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="contributorsEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="createdAt" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="description" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="descriptionURLEntities" type="Q1:URLEntity"/>
+                    <xs:element minOccurs="0" name="favouritesCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="followersCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="friendsCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0"
+                        name="isContributorsEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isFollowRequestSent" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isGeoEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isProtected" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isVerified" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="language" type="xs:string"/>
+                    <xs:element minOccurs="0" name="listedCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="location" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundImageURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundTiled" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBannerImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileImageURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileLinkColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileSidebarBorderColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileSidebarFillColor" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileTextColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileUseBackgroundImage" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="status" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="statusesCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="timeZone" type="xs:string"/>
+                    <xs:element minOccurs="0" name="translator" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="UTCOffset" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+        <schema attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            targetNamespace="www.tibco.com/plugin/java/JavaMethodActivityInput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityInput"
+            xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="www.tibco.com/plugin/java/JavaMethodActivityInput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityInput">
+            <element name="JavaMethodActivityInput" type="tns:MutTypeMethodInputRoot"/>
+            <complexType name="MutTypeMethodInputRoot">
+                <sequence>
+                    <element form="unqualified" maxOccurs="1"
+                        minOccurs="1" name="statusid" type="long"/>
+                    <element form="unqualified" maxOccurs="1"
+                        minOccurs="1" name="status" type="string"/>
+                    <element form="unqualified" maxOccurs="1"
+                        minOccurs="1" name="username" type="string"/>
+                    <element form="unqualified" maxOccurs="1"
+                        minOccurs="1" name="OAuthOwnerName" type="string"/>
+                    <element form="unqualified" maxOccurs="1"
+                        minOccurs="1" name="trackKeyword" type="string"/>
+                </sequence>
+            </complexType>
+        </schema>
+        <schema attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            targetNamespace="www.tibco.com/plugin/java/JavaMethodActivityOutput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityOutput"
+            xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="www.tibco.com/plugin/java/JavaMethodActivityOutput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityOutput">
+            <element name="JavaMethodActivityOutput" type="tns:MutTypeMethodOutputRoot"/>
+            <complexType name="MutTypeMethodOutputRoot">
+                <sequence>
+                    <element form="unqualified" maxOccurs="1"
+                        minOccurs="1" name="isPositive" type="boolean"/>
+                </sequence>
+            </complexType>
+        </schema>
+        <xs:schema
+            targetNamespace="http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Input"
+            version="1.0"
+            xmlns:Q1="http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Input" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="PublishTweetInput" type="Q1:TweetInput"/>
+            <xs:element name="PublishRetweetInput" type="Q1:RetweetInput"/>
+            <xs:element name="PublishFollowInput" type="Q1:FollowInput"/>
+            <xs:element name="PublishFavoriteInput" type="Q1:FavoriteInput"/>
+            <xs:element name="PublishDirectMessageInput" type="Q1:DirectMessageInput"/>
+            <xs:complexType name="TweetInput">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="status" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToStatusId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="latitude" type="xs:double"/>
+                    <xs:element minOccurs="0" name="longitude" type="xs:double"/>
+                    <xs:element minOccurs="0" name="placeId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="displayCordinates" type="xs:boolean"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="media" type="xs:string"/>
+                    <xs:element minOccurs="0" name="isSensitive" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="RetweetInput">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="statusId" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeoLocation">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="latitude" type="xs:string"/>
+                    <xs:element minOccurs="0" name="longitude" type="xs:string"/>
+                    <xs:element minOccurs="0" name="radius" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="FollowInput">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="userId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="follow" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="FavoriteInput">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="statusId" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DirectMessageInput">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="1" name="text" type="xs:string"/>
+                    <xs:element minOccurs="0" name="userId" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+        <xs:schema
+            targetNamespace="http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Output"
+            version="1.0"
+            xmlns:Q1="http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Output" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="PublishTweetOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishRetweetOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishFollowOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="User" type="Q1:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishDirectMessageOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="DirectMessage" type="Q1:DirectMessage"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishFavoriteOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="Status">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="contributors" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="contributorsIDs" type="xs:long"/>
+                    <xs:element minOccurs="0" name="createdAt" type="xs:string"/>
+                    <xs:element minOccurs="0" name="favorited" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="fromUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="geoLocation" type="Q1:GeoLocation"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="hashtagEntities" type="Q1:HashTagEntities"/>
+                    <xs:element minOccurs="1" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="idAsString" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToScreenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToStatusId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="inReplyToUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="isFavorited" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isoLanguageCode" type="xs:string"/>
+                    <xs:element minOccurs="0" name="isTruncated" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="location" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="mediaEntities" type="Q1:MediaEntity"/>
+                    <xs:element minOccurs="0" name="myRetweetedStatus" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="place" type="Q1:Place"/>
+                    <xs:element minOccurs="0" name="profileImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="retweet" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="retweetCount" type="xs:long"/>
+                    <xs:element minOccurs="0" name="retweetedByMe" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="retweetedStatus" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="source" type="xs:string"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                    <xs:element minOccurs="0" name="toUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="truncated" type="xs:boolean"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="URLEntities" type="Q1:URLEntity"/>
+                    <xs:element minOccurs="0" name="user" type="Q1:User"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="userMentionEntities" type="Q1:UserMentionedEntity"/>
+                    <xs:element minOccurs="0" name="wasRetweetedByMe" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeoLocation">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="latitude" type="xs:double"/>
+                    <xs:element minOccurs="1" name="longitude" type="xs:double"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="HashTagEntities">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="Place">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="boundingBoxCoordinates" type="Q1:GeolocationArray"/>
+                    <xs:element minOccurs="0" name="boundingBoxType" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="containedWithIn" type="Q1:Place"/>
+                    <xs:element minOccurs="0" name="country" type="xs:string"/>
+                    <xs:element minOccurs="0" name="countryCode" type="xs:string"/>
+                    <xs:element minOccurs="0" name="fullName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="geometrycordinates" type="Q1:GeolocationArray"/>
+                    <xs:element minOccurs="0" name="geometryType" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0" name="placeType" type="xs:string"/>
+                    <xs:element minOccurs="0" name="streetAddress" type="xs:string"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DirectMessage">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="createdAt" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:string"/>
+                    <xs:element minOccurs="0" name="recipient" type="Q1:User"/>
+                    <xs:element minOccurs="0" name="recipientId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="recipientScreenName" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="sender" type="Q1:User"/>
+                    <xs:element minOccurs="0" name="senderId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="senderScreenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeolocationArray">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="item" type="Q1:GeoLocation"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="MediaEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="displayURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="expandedURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="mediaURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="mediaURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0" name="sizes" type="xs:int"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="type"
+                        nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="URLEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="displayURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="expandedURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="UserMentionedEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="User">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="contributorsEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="createdAt" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="description" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="descriptionURLEntities" type="Q1:URLEntity"/>
+                    <xs:element minOccurs="0" name="favouritesCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="followersCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="friendsCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0"
+                        name="isContributorsEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isFollowRequestSent" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isGeoEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isProtected" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isVerified" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="language" type="xs:string"/>
+                    <xs:element minOccurs="0" name="listedCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="location" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundImageURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundTiled" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBannerImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileImageURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileLinkColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileSidebarBorderColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileSidebarFillColor" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileTextColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileUseBackgroundImage" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="status" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="statusesCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="timeZone" type="xs:string"/>
+                    <xs:element minOccurs="0" name="translator" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="UTCOffset" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+        <xs:schema
+            targetNamespace="http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Input"
+            version="1.0"
+            xmlns:Q1="http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Input" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="PublishTweetInput" type="Q1:TweetInput"/>
+            <xs:element name="PublishRetweetInput" type="Q1:RetweetInput"/>
+            <xs:element name="PublishFollowInput" type="Q1:FollowInput"/>
+            <xs:element name="PublishFavoriteInput" type="Q1:FavoriteInput"/>
+            <xs:element name="PublishDirectMessageInput" type="Q1:DirectMessageInput"/>
+            <xs:complexType name="TweetInput">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="status" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToStatusId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="latitude" type="xs:double"/>
+                    <xs:element minOccurs="0" name="longitude" type="xs:double"/>
+                    <xs:element minOccurs="0" name="placeId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="displayCordinates" type="xs:boolean"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="media" type="xs:string"/>
+                    <xs:element minOccurs="0" name="isSensitive" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="RetweetInput">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="statusId" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeoLocation">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="latitude" type="xs:string"/>
+                    <xs:element minOccurs="0" name="longitude" type="xs:string"/>
+                    <xs:element minOccurs="0" name="radius" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="FollowInput">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="userId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="follow" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="FavoriteInput">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="statusId" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DirectMessageInput">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="1" name="text" type="xs:string"/>
+                    <xs:element minOccurs="0" name="userId" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+        <xs:schema
+            targetNamespace="http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Output"
+            version="1.0"
+            xmlns:Q1="http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Output" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="PublishTweetOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishRetweetOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishFollowOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="User" type="Q1:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishDirectMessageOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="DirectMessage" type="Q1:DirectMessage"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishFavoriteOutput">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="Status" type="Q1:Status"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="Status">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="contributors" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="contributorsIDs" type="xs:long"/>
+                    <xs:element minOccurs="0" name="createdAt" type="xs:string"/>
+                    <xs:element minOccurs="0" name="favorited" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="fromUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="geoLocation" type="Q1:GeoLocation"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="hashtagEntities" type="Q1:HashTagEntities"/>
+                    <xs:element minOccurs="1" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="idAsString" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToScreenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="inReplyToStatusId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="inReplyToUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="isFavorited" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isoLanguageCode" type="xs:string"/>
+                    <xs:element minOccurs="0" name="isTruncated" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="location" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="mediaEntities" type="Q1:MediaEntity"/>
+                    <xs:element minOccurs="0" name="myRetweetedStatus" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="place" type="Q1:Place"/>
+                    <xs:element minOccurs="0" name="profileImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="retweet" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="retweetCount" type="xs:long"/>
+                    <xs:element minOccurs="0" name="retweetedByMe" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="retweetedStatus" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="source" type="xs:string"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                    <xs:element minOccurs="0" name="toUserId" type="xs:long"/>
+                    <xs:element minOccurs="0" name="truncated" type="xs:boolean"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="URLEntities" type="Q1:URLEntity"/>
+                    <xs:element minOccurs="0" name="user" type="Q1:User"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="userMentionEntities" type="Q1:UserMentionedEntity"/>
+                    <xs:element minOccurs="0" name="wasRetweetedByMe" type="xs:boolean"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeoLocation">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="latitude" type="xs:double"/>
+                    <xs:element minOccurs="1" name="longitude" type="xs:double"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="HashTagEntities">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="Place">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="boundingBoxCoordinates" type="Q1:GeolocationArray"/>
+                    <xs:element minOccurs="0" name="boundingBoxType" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="containedWithIn" type="Q1:Place"/>
+                    <xs:element minOccurs="0" name="country" type="xs:string"/>
+                    <xs:element minOccurs="0" name="countryCode" type="xs:string"/>
+                    <xs:element minOccurs="0" name="fullName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="geometrycordinates" type="Q1:GeolocationArray"/>
+                    <xs:element minOccurs="0" name="geometryType" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0" name="placeType" type="xs:string"/>
+                    <xs:element minOccurs="0" name="streetAddress" type="xs:string"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DirectMessage">
+                <xs:sequence>
+                    <xs:element minOccurs="1" name="createdAt" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:string"/>
+                    <xs:element minOccurs="0" name="recipient" type="Q1:User"/>
+                    <xs:element minOccurs="0" name="recipientId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="recipientScreenName" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="sender" type="Q1:User"/>
+                    <xs:element minOccurs="0" name="senderId" type="xs:string"/>
+                    <xs:element minOccurs="0" name="senderScreenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="text" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="GeolocationArray">
+                <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="item" type="Q1:GeoLocation"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="MediaEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="displayURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="expandedURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="mediaURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="mediaURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0" name="sizes" type="xs:int"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="type"
+                        nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="URLEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="displayURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="expandedURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="UserMentionedEntity">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="end" type="xs:int"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="start" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="User">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="contributorsEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="createdAt" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="description" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0"
+                        name="descriptionURLEntities" type="Q1:URLEntity"/>
+                    <xs:element minOccurs="0" name="favouritesCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="followersCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="friendsCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="id" type="xs:long"/>
+                    <xs:element minOccurs="0"
+                        name="isContributorsEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isFollowRequestSent" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isGeoEnabled" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isProtected" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="isVerified" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="language" type="xs:string"/>
+                    <xs:element minOccurs="0" name="listedCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="location" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundImageURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBackgroundTiled" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileBannerImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileImageURL" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileImageURLHttps" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileLinkColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileSidebarBorderColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileSidebarFillColor" type="xs:string"/>
+                    <xs:element minOccurs="0" name="profileTextColor" type="xs:string"/>
+                    <xs:element minOccurs="0"
+                        name="profileUseBackgroundImage" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="screenName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="status" type="Q1:Status"/>
+                    <xs:element minOccurs="0" name="statusesCount" type="xs:int"/>
+                    <xs:element minOccurs="0" name="timeZone" type="xs:string"/>
+                    <xs:element minOccurs="0" name="translator" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="URL" type="xs:string"/>
+                    <xs:element minOccurs="0" name="UTCOffset" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+        <schema
+            targetNamespace="http://www.tibco.com/namespaces/tnt/plugins/file"
+            xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.tibco.com/namespaces/tnt/plugins/file">
+            <complexType name="EventSourceConfigClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="pollInterval" type="int"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="includeSubDirectories" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="includeCurrent" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="excludeContent" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0" name="mode" type="string"/>
+                    <element maxOccurs="1" minOccurs="0" name="encoding" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="encodingUsed" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="sortorder" type="string"/>
+                    <element maxOccurs="1" minOccurs="0" name="sortby" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="EventSourceConfigClass" type="tns:EventSourceConfigClass"/>
+            <complexType name="ReadActivityConfigClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="excludeContent" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0" name="encoding" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="ReadActivityConfigClass" type="tns:ReadActivityConfigClass"/>
+            <complexType name="ReadActivityInputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="fileName" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="ReadActivityInputClass" type="tns:ReadActivityInputClass"/>
+            <complexType name="fileInfoType">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fullName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1" name="fileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1" name="location" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="configuredFileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1" name="type" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="readProtected" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="writeProtected" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="1" name="size" type="long"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="lastModified" type="string"/>
+                </sequence>
+            </complexType>
+            <complexType name="fileContentTypeBinary">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="binaryContent" type="base64Binary"/>
+                </sequence>
+            </complexType>
+            <complexType name="fileContentTypeTextClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="textContent" type="string"/>
+                    <element maxOccurs="1" minOccurs="0" name="encoding" type="string"/>
+                </sequence>
+            </complexType>
+            <complexType name="ReadActivityOutputNoContentClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <element name="ReadActivityOutputNoContentClass" type="tns:ReadActivityOutputNoContentClass"/>
+            <complexType name="ReadActivityOutputBinaryClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="fileContent" type="tns:fileContentTypeBinary"/>
+                </sequence>
+            </complexType>
+            <element name="ReadActivityOutputBinaryClass" type="tns:ReadActivityOutputBinaryClass"/>
+            <complexType name="ReadActivityOutputTextClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="fileContent" type="tns:fileContentTypeTextClass"/>
+                </sequence>
+            </complexType>
+            <element name="ReadActivityOutputTextClass" type="tns:ReadActivityOutputTextClass"/>
+            <complexType name="FileIOException"/>
+            <element name="FileIOException" type="tns:FileIOException"/>
+            <complexType name="EventSourceOuputNoContentClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="action" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="timeOccurred" type="long"/>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <element name="EventSourceOuputNoContentClass" type="tns:EventSourceOuputNoContentClass"/>
+            <complexType name="EventSourceOuputBinaryClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="action" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="timeOccurred" type="string"/>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="fileContent" type="tns:fileContentTypeBinary"/>
+                </sequence>
+            </complexType>
+            <element name="EventSourceOuputBinaryClass" type="tns:EventSourceOuputBinaryClass"/>
+            <complexType name="EventSourceOuputTextClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="action" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="timeOccurred" type="long"/>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="fileContent" type="tns:fileContentTypeTextClass"/>
+                </sequence>
+            </complexType>
+            <element name="EventSourceOuputTextClass" type="tns:EventSourceOuputTextClass"/>
+            <complexType name="WriteActivityConfigClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="createNewFile" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0" name="append" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0" name="encoding" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="compressFile" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="WriteActivityConfigClass" type="tns:WriteActivityConfigClass"/>
+            <complexType name="WriteActivityInputBinaryClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="fileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="binaryContent" type="base64Binary"/>
+                </sequence>
+            </complexType>
+            <element name="WriteActivityInputBinaryClass" type="tns:WriteActivityInputBinaryClass"/>
+            <complexType name="WriteActivityInputTextClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="fileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="textContent" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="addLineSeparator" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0" name="encoding" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="WriteActivityInputTextClass" type="tns:WriteActivityInputTextClass"/>
+            <complexType name="WriteActivityOutputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <element name="WriteActivityOutputClass" type="tns:WriteActivityOutputClass"/>
+            <complexType name="CreateActivityConfigClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="override" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="createDirectory" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="createMissingDirectories" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="overwrite" type="boolean"/>
+                </sequence>
+            </complexType>
+            <element name="CreateActivityConfigClass" type="tns:CreateActivityConfigClass"/>
+            <complexType name="CreateActivityInputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="fileName" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="CreateActivityInputClass" type="tns:CreateActivityInputClass"/>
+            <complexType name="CreateActivityOutputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <element name="CreateActivityOutputClass" type="tns:CreateActivityOutputClass"/>
+            <complexType name="RemoveActivityConfigClass"/>
+            <element name="RemoveActivityConfigClass" type="tns:RemoveActivityConfigClass"/>
+            <complexType name="RemoveActivityInputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="fileName" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="RemoveActivityInputClass" type="tns:RemoveActivityInputClass"/>
+            <complexType name="RemoveActivityOutputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <element name="RemoveActivityOutputClass" type="tns:RemoveActivityOutputClass"/>
+            <element name="RenameActivityConfig" type="tns:RenameActivityInputClass"/>
+            <complexType name="RenameActivityConfig">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="overwrite" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="createMissingDirectories" type="boolean"/>
+                </sequence>
+            </complexType>
+            <complexType name="RenameActivityInputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="fromFileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="toFileName" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="RenameActivityInputClass" type="tns:RenameActivityInputClass"/>
+            <complexType name="RenameActivityOutput">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <complexType name="ListFilesActivityConfig">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="mode" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="ListFilesActivityConfig" type="tns:ListFilesActivityInputClass"/>
+            <complexType name="ListFilesActivityInputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0" name="fileName" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="ListFilesActivityInputClass" type="tns:ListFilesActivityInputClass"/>
+            <complexType name="files">
+                <sequence>
+                    <element maxOccurs="unbounded" minOccurs="0"
+                        name="fileInfo" type="tns:fileInfoType"/>
+                </sequence>
+            </complexType>
+            <complexType name="ListFilesActivityOutput">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1" name="files" type="tns:files"/>
+                </sequence>
+            </complexType>
+            <element name="ListFilesActivityOutput" type="tns:ListFilesActivityOutput"/>
+            <complexType name="CopyActivityConfig">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="fromFileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="1"
+                        name="toFileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="overwrite" type="boolean"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="createMissingDirectories" type="boolean"/>
+                </sequence>
+            </complexType>
+            <element name="CopyActivityConfig" type="tns:CopyActivityInputClass"/>
+            <complexType name="CopyActivityInputClass">
+                <sequence>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="fromFileName" type="string"/>
+                    <element maxOccurs="1" minOccurs="0"
+                        name="toFileName" type="string"/>
+                </sequence>
+            </complexType>
+            <element name="CopyActivityInputClass" type="tns:CopyActivityInputClass"/>
+            <element name="RenameActivityOutput" type="tns:RenameActivityOutput"/>
+            <element name="input" type="tns:WaitForFileChangeActivityInput"/>
+            <complexType name="WaitForFileChangeActivityInput">
+                <sequence>
+                    <element minOccurs="0" name="key" type="string"/>
+                    <element minOccurs="0" name="processTimeout" type="int"/>
+                </sequence>
+            </complexType>
+        </schema>
+        <wsdl:definitions
+            targetNamespace="http://xmlns.example.com/20160309110033"
+            xmlns:tns="http://xmlns.example.com/20160309110033"
+            xmlns:vprop="http://docs.oasis-open.org/wsbpel/2.0/varprop"
+            xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+    </tibex:Types>
+    <tibex:ProcessInfo callable="false" createdBy="RoryGao"
+        createdOn="Wed Mar 09 11:00:33 CST 2016" description=""
+        extraErrorVars="false" modifiers="public"
+        productVersion="6.3.1 V12 2016-01-27" scalable="true"
+        singleton="true" stateless="false" type="IT"/>
+    <tibex:ProcessTemplateConfigurations/>
+    <notation:Diagram measurementUnit="Pixel" type="BWProcess"
+        xmlns:bwnotation="http://tns.tibco.com/bw/runtime/BWNotation"
+        xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <children type="2001">
+            <children type="5001">
+                <element href="//0/@process"/>
+            </children>
+            <children type="3001">
+                <styles xsi:type="notation:SortingStyle"/>
+                <styles xsi:type="notation:FilteringStyle"/>
+                <element href="//0/@process"/>
+            </children>
+            <children type="3002">
+                <styles xsi:type="notation:SortingStyle"/>
+                <styles xsi:type="notation:FilteringStyle"/>
+                <element href="//0/@process"/>
+            </children>
+            <children type="3003">
+                <styles xsi:type="notation:SortingStyle"/>
+                <styles xsi:type="notation:FilteringStyle"/>
+                <element href="//0/@process"/>
+            </children>
+            <children type="3004">
+                <children type="4018">
+                    <children type="3018">
+                        <children type="4020">
+                            <children type="3020">
+                                <children type="4005">
+                                    <children type="3007">
+                                    <children type="4002 bw.twitter.TwitterStreamListener">
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.0"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.0"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.0"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.0"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.0"/>
+                                    <layoutConstraint
+                                    height="40" width="40"
+                                    x="-89"
+                                    xsi:type="notation:Bounds" y="145"/>
+                                    </children>
+                                    <children type="4002">
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.1"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.1"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.1"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.1"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.1"/>
+                                    <layoutConstraint x="24"
+                                    xsi:type="notation:Bounds" y="145"/>
+                                    </children>
+                                    <children type="4002">
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.2"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.2"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.2"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.2"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.2"/>
+                                    <layoutConstraint x="141"
+                                    xsi:type="notation:Bounds" y="14"/>
+                                    </children>
+                                    <children type="4002">
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.3"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.3"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.3"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.3"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.3"/>
+                                    <layoutConstraint x="311"
+                                    xsi:type="notation:Bounds" y="14"/>
+                                    </children>
+                                    <children type="4002">
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.4"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.4"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.4"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.4"/>
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles fontName="Segoe UI"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <element href="//0/@process/@activity/@activity/@activities.4"/>
+                                    <layoutConstraint x="349"
+                                    xsi:type="notation:Bounds" y="145"/>
+                                    </children>
+                                    <styles xsi:type="notation:DrawerStyle"/>
+                                    <styles xsi:type="notation:SortingStyle"/>
+                                    <styles xsi:type="notation:FilteringStyle"/>
+                                    <element href="//0/@process/@activity/@activity"/>
+                                    </children>
+                                    <styles fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <styles xsi:type="bwnotation:ResizingStyle"/>
+                                    <element href="//0/@process/@activity/@activity"/>
+                                    <layoutConstraint height="554"
+                                    width="518" xsi:type="notation:Bounds"/>
+                                </children>
+                                <styles xsi:type="notation:SortingStyle"/>
+                                <styles xsi:type="notation:FilteringStyle"/>
+                                <element href="//0/@process/@activity"/>
+                            </children>
+                            <styles fontName=".SF NS Text" lineColor="0" xsi:type="notation:ShapeStyle"/>
+                            <styles xsi:type="bwnotation:BackgroundStyle"/>
+                            <styles xsi:type="bwnotation:ResizingStyle"/>
+                            <element href="//0/@process/@activity"/>
+                            <layoutConstraint height="554" width="521" xsi:type="notation:Bounds"/>
+                        </children>
+                        <children type="4022">
+                            <children type="3022">
+                                <children type="4029">
+                                    <children type="3031">
+                                    <children type="4033">
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <element href="//0/@process/@activity/@faultHandlers/@catchAll"/>
+                                    <layoutConstraint
+                                    height="34" width="34"
+                                    xsi:type="notation:Bounds" y="68"/>
+                                    </children>
+                                    <styles xsi:type="notation:SortingStyle"/>
+                                    <styles xsi:type="notation:FilteringStyle"/>
+                                    </children>
+                                    <children type="3032">
+                                    <children type="4005">
+                                    <children type="3007">
+                                    <children type="4002 bw.file.write">
+                                    <children type="4017">
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <children type="4017">
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+
+                                    <layoutConstraint xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <element href="//0/@process/@activity/@faultHandlers/@catchAll/@activity/@activity/@activities.0"/>
+                                    <layoutConstraint
+                                    height="40"
+                                    width="40"
+                                    x="68"
+                                    xsi:type="notation:Bounds" y="53"/>
+                                    </children>
+                                    <styles xsi:type="notation:DrawerStyle"/>
+                                    <styles xsi:type="notation:SortingStyle"/>
+                                    <styles xsi:type="notation:FilteringStyle"/>
+                                    </children>
+                                    <styles
+                                    fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles
+                                    backgroundColor="16777215"
+                                    gradientEndColor="50431"
+                                    gradientStartColor="16777215" xsi:type="bwnotation:BackgroundStyle"/>
+                                    <styles xsi:type="bwnotation:ResizingStyle"/>
+                                    <element href="//0/@process/@activity/@faultHandlers/@catchAll/@activity/@activity"/>
+                                    <layoutConstraint
+                                    height="168" width="420" xsi:type="notation:Bounds"/>
+                                    </children>
+                                    <styles xsi:type="notation:SortingStyle"/>
+                                    <styles xsi:type="notation:FilteringStyle"/>
+                                    </children>
+                                    <styles fontName=".SF NS Text"
+                                    lineColor="0" xsi:type="notation:ShapeStyle"/>
+                                    <styles xsi:type="bwnotation:BackgroundStyle"/>
+                                    <styles collapsed="true"
+                                    restoreHeight="178"
+                                    restoreWidth="471" xsi:type="bwnotation:ResizingStyle"/>
+                                    <element href="//0/@process/@activity/@faultHandlers/@catchAll"/>
+                                    <layoutConstraint height="22"
+                                    width="471" xsi:type="notation:Bounds"/>
+                                </children>
+                                <styles xsi:type="notation:SortingStyle"/>
+                                <styles xsi:type="notation:FilteringStyle"/>
+                            </children>
+                            <styles fontName=".SF NS Text" lineColor="0" xsi:type="notation:ShapeStyle"/>
+                            <styles xsi:type="bwnotation:BackgroundStyle"/>
+                            <styles xsi:type="bwnotation:ResizingStyle"/>
+                            <element href="//0/@process/@activity/@faultHandlers"/>
+                            <layoutConstraint height="44" width="481"
+                                x="22" xsi:type="notation:Bounds" y="554"/>
+                        </children>
+                        <styles xsi:type="notation:SortingStyle"/>
+                        <styles xsi:type="notation:FilteringStyle"/>
+                        <element href="//0/@process/@activity"/>
+                    </children>
+                    <styles fontName=".SF NS Text" lineColor="0" xsi:type="notation:ShapeStyle"/>
+                    <styles xsi:type="bwnotation:BackgroundStyle"/>
+                    <styles xsi:type="bwnotation:ResizingStyle"/>
+                    <element href="//0/@process/@activity"/>
+                    <layoutConstraint height="599" width="521" x="1"
+                        xsi:type="notation:Bounds" y="1"/>
+                </children>
+                <styles xsi:type="notation:SortingStyle"/>
+                <styles xsi:type="notation:FilteringStyle"/>
+                <element href="//0/@process"/>
+            </children>
+            <styles fontName=".SF NS Text" lineColor="0" xsi:type="notation:ShapeStyle"/>
+            <element href="//0/@process"/>
+            <layoutConstraint height="651" width="863" xsi:type="notation:Bounds"/>
+        </children>
+        <styles xsi:type="notation:DiagramStyle"/>
+        <element href="//0"/>
+        <edges
+            source="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0"
+            target="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.1" type="4006">
+            <children type="6002">
+                <layoutConstraint xsi:type="notation:Location" y="40"/>
+            </children>
+            <styles lineColor="0" xsi:type="notation:ConnectorStyle"/>
+            <styles fontName=".SF NS Text" xsi:type="notation:FontStyle"/>
+            <element href="//0/@process/@activity/@activity/@links/@children.0"/>
+            <bendpoints points="[25, -6, -108, 0]$[109, 0, -24, 6]" xsi:type="notation:RelativeBendpoints"/>
+        </edges>
+        <edges
+            source="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.1"
+            target="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.2" type="4006">
+            <children type="6002">
+                <layoutConstraint x="17" xsi:type="notation:Location" y="-66"/>
+            </children>
+            <styles lineColor="0" xsi:type="notation:ConnectorStyle"/>
+            <styles fontName=".SF NS Text" xsi:type="notation:FontStyle"/>
+            <element href="//0/@process/@activity/@activity/@links/@children.1"/>
+            <bendpoints
+                points="[0, -24, -117, 107]$[0, -131, -117, 0]$[93, -131, -24, 0]" xsi:type="notation:RelativeBendpoints"/>
+        </edges>
+        <edges
+            source="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.1"
+            target="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.4" type="4006">
+            <children type="6002">
+                <layoutConstraint xsi:type="notation:Location" y="29"/>
+            </children>
+            <styles lineColor="0" xsi:type="notation:ConnectorStyle"/>
+            <styles fontName=".SF NS Text" xsi:type="notation:FontStyle"/>
+            <element href="//0/@process/@activity/@activity/@links/@children.2"/>
+            <bendpoints
+                points="[0, 25, -325, 25]$[0, 116, -325, 116]$[325, 116, 0, 116]$[325, 25, 0, 25]" xsi:type="notation:RelativeBendpoints"/>
+        </edges>
+        <edges
+            source="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.2"
+            target="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.3" type="4006">
+            <children type="6002">
+                <layoutConstraint x="24" xsi:type="notation:Location" y="-36"/>
+            </children>
+            <styles lineColor="0" xsi:type="notation:ConnectorStyle"/>
+            <styles fontName=".SF NS Text" xsi:type="notation:FontStyle"/>
+            <element href="//0/@process/@activity/@activity/@links/@children.3"/>
+            <bendpoints points="[25, 0, -163, 0]$[164, 0, -24, 0]" xsi:type="notation:RelativeBendpoints"/>
+        </edges>
+        <edges
+            source="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.2"
+            target="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.4" type="4006">
+            <children type="6002">
+                <layoutConstraint xsi:type="notation:Location" y="40"/>
+            </children>
+            <styles lineColor="0" xsi:type="notation:ConnectorStyle"/>
+            <styles fontName=".SF NS Text" xsi:type="notation:FontStyle"/>
+            <element href="//0/@process/@activity/@activity/@links/@children.4"/>
+            <bendpoints
+                points="[5, 25, -183, -106]$[5, 131, -183, 0]$[164, 131, -24, 0]" xsi:type="notation:RelativeBendpoints"/>
+        </edges>
+        <edges
+            source="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.3"
+            target="//@children.0/@children.4/@children.0/@children.0/@children.0/@children.0/@children.0/@children.0/@children.4" type="4006">
+            <children type="6002">
+                <layoutConstraint xsi:type="notation:Location" y="40"/>
+            </children>
+            <styles lineColor="0" xsi:type="notation:ConnectorStyle"/>
+            <styles fontName=".SF NS Text" xsi:type="notation:FontStyle"/>
+            <element href="//0/@process/@activity/@activity/@links/@children.5"/>
+            <bendpoints
+                points="[25, 0, -13, -131]$[38, 0, 0, -131]$[38, 107, 0, -24]" xsi:type="notation:RelativeBendpoints"/>
+        </edges>
+    </notation:Diagram>
+    <bpws:variables>
+        <bpws:variable element="ns:ProcessContext"
+            name="_processContext" sca-bpel:internal="true"/>
+        <bpws:variable element="ns0:PublicStream" name="Listen-Tweets" sca-bpel:internal="true"/>
+        <bpws:variable name="OAuthProperty" sca-bpel:hotUpdate="false"
+            sca-bpel:privateProperty="true" sca-bpel:property="yes"
+            sca-bpel:sharedResourceType="{http://ns.tibco.com/bw/sharedresource/twitter}OAuth" type="xsd:string">
+            <bpws:from>
+                <bpws:literal>listenandretweet.OauthResource</bpws:literal>
+            </bpws:from>
+        </bpws:variable>
+        <bpws:variable element="ns1:JavaMethodActivityInput"
+            name="Analyze-Tweet-input" sca-bpel:internal="true"/>
+        <bpws:variable element="ns2:JavaMethodActivityOutput"
+            name="Analyze-Tweet" sca-bpel:internal="true"/>
+        <bpws:variable element="ns3:PublishTweetInput"
+            name="Send-reply-to-Tweet-input" sca-bpel:internal="true"/>
+        <bpws:variable element="ns4:PublishTweetOutput"
+            name="Send-reply-to-Tweet" sca-bpel:internal="true"/>
+        <bpws:variable element="ns5:PublishRetweetInput"
+            name="Retweet-input" sca-bpel:internal="true"/>
+        <bpws:variable element="ns6:PublishRetweetOutput" name="Retweet" sca-bpel:internal="true"/>
+        <bpws:variable name="OAuthOwnerName" sca-bpel:hotUpdate="false"
+            sca-bpel:privateProperty="true" sca-bpel:property="yes"
+            tibex:propertySource="/TwitterSample/OAuthOwnerName" type="xsd:string"/>
+        <bpws:variable name="ReplyString" sca-bpel:hotUpdate="false"
+            sca-bpel:privateProperty="true" sca-bpel:property="yes"
+            tibex:propertySource="/TwitterSample/ReplyString" type="xsd:string"/>
+        <bpws:variable name="TrackKeyword" sca-bpel:hotUpdate="false"
+            sca-bpel:privateProperty="true" sca-bpel:property="yes"
+            tibex:propertySource="/TwitterSample/TrackKeyword" type="xsd:string"/>
+        <bpws:variable name="FaultName" sca-bpel:internal="true" type="xsd:string"/>
+        <bpws:variable element="ns:FaultDetail" name="FaultDetails" sca-bpel:internal="true"/>
+        <bpws:variable element="ns7:WriteActivityInputTextClass"
+            name="WriteFile-input" sca-bpel:internal="true"/>
+        <bpws:variable element="ns7:WriteActivityOutputClass"
+            name="WriteFile" sca-bpel:internal="true"/>
+    </bpws:variables>
+    <bpws:extensions>
+        <bpws:extension mustUnderstand="no" namespace="http://www.eclipse.org/gmf/runtime/1.0.2/notation"/>
+        <bpws:extension mustUnderstand="no" namespace="http://www.tibco.com/bw/process/info"/>
+        <bpws:extension mustUnderstand="no" namespace="http://docs.oasis-open.org/ns/opencsa/sca-bpel/200801"/>
+        <bpws:extension mustUnderstand="no" namespace="http://docs.oasis-open.org/ns/opencsa/sca/200912"/>
+        <bpws:extension mustUnderstand="no" namespace="http://ns.tibco.com/bw/property"/>
+        <bpws:extension mustUnderstand="no" namespace="http://www.tibco.com/bpel/2007/extensions"/>
+    </bpws:extensions>
+    <bpws:scope name="scope">
+        <bpws:faultHandlers>
+            <bpws:catchAll tibex:faultDetailsVar="FaultDetails"
+                tibex:faultNameVar="FaultName" tibex:xpdlId="baa88c14-e857-4f97-8add-d67d4f005197">
+                <bpws:scope name="scope1">
+                    <bpws:flow name="flow1">
+                        <bpws:links/>
+                        <bpws:extensionActivity>
+                            <tibex:activityExtension
+                                expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;http://www.tibco.com/namespaces/tnt/plugins/file&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;FaultDetails&quot;/>&lt;xsl:template name=&quot;WriteFile-input&quot; match=&quot;/&quot;>&lt;tns:WriteActivityInputTextClass>&lt;fileName>&lt;xsl:value-of select=&quot;&amp;quot;C:/TwitterSampleExceptions.txt&amp;quot;&quot;/>&lt;/fileName>&lt;textContent>&lt;xsl:value-of select=&quot;concat($FaultDetails/MsgCode,$FaultDetails/Msg)&quot;/>&lt;/textContent>&lt;/tns:WriteActivityInputTextClass>&lt;/xsl:template>&lt;/xsl:stylesheet>"
+                                expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"
+                                inputVariable="WriteFile-input"
+                                name="WriteFile"
+                                outputVariable="WriteFile"
+                                tibex:xpdlId="47bdf2d1-7e9f-4892-8232-7e376fa08a53" xmlns:tibex="http://www.tibco.com/bpel/2007/extensions">
+                                <tibex:inputBindings>
+                                    <tibex:inputBinding
+                                    expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;http://www.tibco.com/namespaces/tnt/plugins/file&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;FaultDetails&quot;/>&lt;xsl:template name=&quot;WriteFile-input&quot; match=&quot;/&quot;>&lt;tns:WriteActivityInputTextClass>&lt;fileName>&lt;xsl:value-of select=&quot;&amp;quot;C:/TwitterSampleExceptions.txt&amp;quot;&quot;/>&lt;/fileName>&lt;textContent>&lt;xsl:value-of select=&quot;concat($FaultDetails/MsgCode,$FaultDetails/Msg)&quot;/>&lt;/textContent>&lt;/tns:WriteActivityInputTextClass>&lt;/xsl:template>&lt;/xsl:stylesheet>" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"/>
+                                </tibex:inputBindings>
+                                <tibex:config>
+                                    <bwext:BWActivity
+                                    activityTypeID="bw.file.write"
+                                    xmlns:activityconfig="http://tns.tibco.com/bw/model/activityconfig"
+                                    xmlns:bwext="http://tns.tibco.com/bw/model/core/bwext"
+                                    xmlns:file="http://ns.tibco.com/bw/palette/file" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                    <activityConfig>
+                                    <properties name="config" xsi:type="activityconfig:EMFProperty">
+                                    <type href="http://ns.tibco.com/bw/palette/file#//WriteFile"/>
+                                    <value append="true"
+                                    compressFile="None"
+                                    createMissingDirectories="true"
+                                    encoding="text" xsi:type="file:WriteFile"/>
+                                    </properties>
+                                    </activityConfig>
+                                    </bwext:BWActivity>
+                                </tibex:config>
+                            </tibex:activityExtension>
+                        </bpws:extensionActivity>
+                    </bpws:flow>
+                </bpws:scope>
+            </bpws:catchAll>
+        </bpws:faultHandlers>
+        <bpws:flow name="flow">
+            <bpws:links>
+                <bpws:link name="ListenTweetsToAnalyzeTweet" tibex:linkType="SUCCESS"/>
+                <bpws:link
+                    name="AnalyzeTweetToSendreplytoTweet_CheckforpositiveTweets"
+                    tibex:label="Check for positive Tweets" tibex:linkType="SUCCESSWITHCONDITION"/>
+                <bpws:link name="AnalyzeTweetToExit_Checkforfalse"
+                    tibex:label="Check for false" tibex:linkType="SUCCESSWITHCONDITION"/>
+                <bpws:link
+                    name="SendreplytoTweetToRetweet_Checkforuserswithgoodnumberoffollowers"
+                    tibex:label="Check for users with good number of followers" tibex:linkType="SUCCESSWITHCONDITION"/>
+                <bpws:link name="SendreplytoTweetToExit" tibex:linkType="SUCCESS"/>
+                <bpws:link name="RetweetToExit" tibex:linkType="SUCCESS"/>
+            </bpws:links>
+            <bpws:extensionActivity>
+                <tibex:receiveEvent createInstance="yes"
+                    eventTimeout="60" name="Listen Tweets"
+                    tibex:xpdlId="26ef04e7-7cab-4fde-b41c-bba31cf51d86"
+                    variable="Listen-Tweets" xmlns:tibex="http://www.tibco.com/bpel/2007/extensions">
+                    <bpws:sources>
+                        <bpws:source linkName="ListenTweetsToAnalyzeTweet"/>
+                    </bpws:sources>
+                    <bpws:correlations/>
+                    <tibex:eventSource>
+                        <bwext:BWActivity
+                            activityTypeID="bw.twitter.TwitterStreamListener"
+                            xmlns:activityconfig="http://tns.tibco.com/bw/model/activityconfig"
+                            xmlns:bwext="http://tns.tibco.com/bw/model/core/bwext"
+                            xmlns:twitter="http://ns.tibco.com/bw/palette/twitter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                            <activityConfig>
+                                <properties name="config" xsi:type="activityconfig:EMFProperty">
+                                    <type href="http://ns.tibco.com/bw/palette/twitter#//TwitterStreamListener"/>
+                                    <value oAuth="OAuthProperty"
+                                    streamClosingLimit="1000"
+                                    streamSubType="FilterStream"
+                                    streamType="PublicStream"
+                                    track="Game of Six" xsi:type="twitter:TwitterStreamListener"/>
+                                </properties>
+                            </activityConfig>
+                        </bwext:BWActivity>
+                    </tibex:eventSource>
+                </tibex:receiveEvent>
+            </bpws:extensionActivity>
+            <bpws:extensionActivity>
+                <tibex:activityExtension
+                    expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;www.tibco.com/plugin/java/JavaMethodActivityInput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityInput&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;Listen-Tweets&quot;/>&lt;xsl:param name=&quot;TrackKeyword&quot;/>&lt;xsl:param name=&quot;OAuthOwnerName&quot;/>&lt;xsl:template name=&quot;Analyze-Tweet-input&quot; match=&quot;/&quot;>&lt;tns:JavaMethodActivityInput>&lt;statusid>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/id&quot;/>&lt;/statusid>&lt;status>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/text&quot;/>&lt;/status>&lt;username>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/user/screenName&quot;/>&lt;/username>&lt;OAuthOwnerName>&lt;xsl:value-of select=&quot;$OAuthOwnerName&quot;/>&lt;/OAuthOwnerName>&lt;trackKeyword>&lt;xsl:value-of select=&quot;$TrackKeyword&quot;/>&lt;/trackKeyword>&lt;/tns:JavaMethodActivityInput>&lt;/xsl:template>&lt;/xsl:stylesheet>"
+                    expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"
+                    inputVariable="Analyze-Tweet-input"
+                    name="Analyze Tweet" outputVariable="Analyze-Tweet"
+                    tibex:xpdlId="7350a79b-80f2-4199-b428-67bc6177bb01" xmlns:tibex="http://www.tibco.com/bpel/2007/extensions">
+                    <bpws:targets>
+                        <bpws:target linkName="ListenTweetsToAnalyzeTweet"/>
+                    </bpws:targets>
+                    <bpws:sources>
+                        <bpws:source linkName="AnalyzeTweetToSendreplytoTweet_CheckforpositiveTweets">
+                            <tibex:DesignExpression>
+                                <tibex:expression
+                                    expression="$Analyze-Tweet/isPositive=true()" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"/>
+                            </tibex:DesignExpression>
+                            <bpws:transitionCondition><![CDATA[$Analyze-Tweet/isPositive=true()]]></bpws:transitionCondition>
+                        </bpws:source>
+                        <bpws:source linkName="AnalyzeTweetToExit_Checkforfalse">
+                            <tibex:DesignExpression>
+                                <tibex:expression
+                                    expression="$Analyze-Tweet/isPositive = false()" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"/>
+                            </tibex:DesignExpression>
+                            <bpws:transitionCondition><![CDATA[$Analyze-Tweet/isPositive = false()]]></bpws:transitionCondition>
+                        </bpws:source>
+                    </bpws:sources>
+                    <tibex:inputBindings>
+                        <tibex:inputBinding
+                            expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;www.tibco.com/plugin/java/JavaMethodActivityInput+7350a79b-80f2-4199-b428-67bc6177bb01+JavaMethodActivityInput&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;Listen-Tweets&quot;/>&lt;xsl:param name=&quot;TrackKeyword&quot;/>&lt;xsl:param name=&quot;OAuthOwnerName&quot;/>&lt;xsl:template name=&quot;Analyze-Tweet-input&quot; match=&quot;/&quot;>&lt;tns:JavaMethodActivityInput>&lt;statusid>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/id&quot;/>&lt;/statusid>&lt;status>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/text&quot;/>&lt;/status>&lt;username>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/user/screenName&quot;/>&lt;/username>&lt;OAuthOwnerName>&lt;xsl:value-of select=&quot;$OAuthOwnerName&quot;/>&lt;/OAuthOwnerName>&lt;trackKeyword>&lt;xsl:value-of select=&quot;$TrackKeyword&quot;/>&lt;/trackKeyword>&lt;/tns:JavaMethodActivityInput>&lt;/xsl:template>&lt;/xsl:stylesheet>" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"/>
+                    </tibex:inputBindings>
+                    <tibex:config>
+                        <bwext:BWActivity
+                            activityTypeID="bw.java.javamethod"
+                            xmlns:activityconfig="http://tns.tibco.com/bw/model/activityconfig"
+                            xmlns:bwext="http://tns.tibco.com/bw/model/core/bwext"
+                            xmlns:java="http://ns.tibco.com/bw/palette/java" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                            <activityConfig>
+                                <properties name="config" xsi:type="activityconfig:EMFProperty">
+                                    <type href="http://ns.tibco.com/bw/palette/java#//JavaMethod"/>
+                                    <value
+                                    className="ListenAndRetweet.ListenAndRetweetAnalyzeTweet"
+                                    isMultipleOutput="true"
+                                    methodName="invoke"
+                                    methodReturn="void" xsi:type="java:JavaMethod">
+                                    <exceptionTypes>Exception</exceptionTypes>
+                                    <javaActivityParameter
+                                    parameterCardinality="Required"
+                                    parameterDataType="long"
+                                    parameterName="statusid" parameterType="IN"/>
+                                    <javaActivityParameter
+                                    parameterCardinality="Required"
+                                    parameterDataType="string"
+                                    parameterName="status" parameterType="IN"/>
+                                    <javaActivityParameter
+                                    parameterCardinality="Required"
+                                    parameterDataType="string"
+                                    parameterName="username" parameterType="IN"/>
+                                    <javaActivityParameter
+                                    parameterCardinality="Required"
+                                    parameterDataType="string"
+                                    parameterName="OAuthOwnerName" parameterType="IN"/>
+                                    <javaActivityParameter
+                                    parameterCardinality="Required"
+                                    parameterDataType="string"
+                                    parameterName="trackKeyword" parameterType="IN"/>
+                                    <javaActivityParameter
+                                    parameterCardinality="Required"
+                                    parameterDataType="boolean"
+                                    parameterName="isPositive" parameterType="OUT"/>
+                                    </value>
+                                </properties>
+                            </activityConfig>
+                        </bwext:BWActivity>
+                    </tibex:config>
+                </tibex:activityExtension>
+            </bpws:extensionActivity>
+            <bpws:extensionActivity>
+                <tibex:activityExtension
+                    expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Input&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;Listen-Tweets&quot;/>&lt;xsl:param name=&quot;ReplyString&quot;/>&lt;xsl:template name=&quot;Send-reply-to-Tweet-input&quot; match=&quot;/&quot;>&lt;tns:PublishTweetInput>&lt;status>&lt;xsl:value-of select=&quot;concat(&amp;quot;@&amp;quot;,$Listen-Tweets/Status/user/screenName, &amp;quot; &amp;quot;, $ReplyString)&quot;/>&lt;/status>&lt;xsl:if test=&quot;$Listen-Tweets/Status/id&quot;>&lt;inReplyToStatusId>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/id&quot;/>&lt;/inReplyToStatusId>&lt;/xsl:if>&lt;/tns:PublishTweetInput>&lt;/xsl:template>&lt;/xsl:stylesheet>"
+                    expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"
+                    inputVariable="Send-reply-to-Tweet-input"
+                    name="Send reply to Tweet"
+                    outputVariable="Send-reply-to-Tweet"
+                    tibex:xpdlId="6a2bc483-f556-473c-b819-29b10ee1b55d" xmlns:tibex="http://www.tibco.com/bpel/2007/extensions">
+                    <bpws:targets>
+                        <bpws:target linkName="AnalyzeTweetToSendreplytoTweet_CheckforpositiveTweets"/>
+                    </bpws:targets>
+                    <bpws:sources>
+                        <bpws:source linkName="SendreplytoTweetToRetweet_Checkforuserswithgoodnumberoffollowers">
+                            <tibex:DesignExpression>
+                                <tibex:expression
+                                    expression="$Listen-Tweets/Status/user/followersCount >= 4" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"/>
+                            </tibex:DesignExpression>
+                            <bpws:transitionCondition><![CDATA[$Listen-Tweets/Status/user/followersCount >= 4]]></bpws:transitionCondition>
+                        </bpws:source>
+                        <bpws:source linkName="SendreplytoTweetToExit"/>
+                    </bpws:sources>
+                    <tibex:inputBindings>
+                        <tibex:inputBinding
+                            expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;http://www.tibco.com/namespaces/tnt/plugins/twitter+6a2bc483-f556-473c-b819-29b10ee1b55d+Input&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;Listen-Tweets&quot;/>&lt;xsl:param name=&quot;ReplyString&quot;/>&lt;xsl:template name=&quot;Send-reply-to-Tweet-input&quot; match=&quot;/&quot;>&lt;tns:PublishTweetInput>&lt;status>&lt;xsl:value-of select=&quot;concat(&amp;quot;@&amp;quot;,$Listen-Tweets/Status/user/screenName, &amp;quot; &amp;quot;, $ReplyString)&quot;/>&lt;/status>&lt;xsl:if test=&quot;$Listen-Tweets/Status/id&quot;>&lt;inReplyToStatusId>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/id&quot;/>&lt;/inReplyToStatusId>&lt;/xsl:if>&lt;/tns:PublishTweetInput>&lt;/xsl:template>&lt;/xsl:stylesheet>" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"/>
+                    </tibex:inputBindings>
+                    <tibex:config>
+                        <bwext:BWActivity
+                            activityTypeID="bw.twitter.TwitterPublish"
+                            xmlns:activityconfig="http://tns.tibco.com/bw/model/activityconfig"
+                            xmlns:bwext="http://tns.tibco.com/bw/model/core/bwext"
+                            xmlns:twitter="http://ns.tibco.com/bw/palette/twitter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                            <activityConfig>
+                                <properties name="config" xsi:type="activityconfig:EMFProperty">
+                                    <type href="http://ns.tibco.com/bw/palette/twitter#//TwitterPublish"/>
+                                    <value oAuth="OAuthProperty"
+                                    publishType="Tweet" xsi:type="twitter:TwitterPublish"/>
+                                </properties>
+                            </activityConfig>
+                        </bwext:BWActivity>
+                    </tibex:config>
+                </tibex:activityExtension>
+            </bpws:extensionActivity>
+            <bpws:extensionActivity>
+                <tibex:activityExtension
+                    expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Input&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;Listen-Tweets&quot;/>&lt;xsl:template name=&quot;TwitterPublish-input&quot; match=&quot;/&quot;>&lt;tns:PublishRetweetInput>&lt;statusId>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/id&quot;/>&lt;/statusId>&lt;/tns:PublishRetweetInput>&lt;/xsl:template>&lt;/xsl:stylesheet>"
+                    expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"
+                    inputVariable="Retweet-input" name="Retweet"
+                    outputVariable="Retweet"
+                    tibex:xpdlId="24bd7012-3c97-4e4a-82f7-d92c7613c49b" xmlns:tibex="http://www.tibco.com/bpel/2007/extensions">
+                    <bpws:targets>
+                        <bpws:target linkName="SendreplytoTweetToRetweet_Checkforuserswithgoodnumberoffollowers"/>
+                    </bpws:targets>
+                    <bpws:sources>
+                        <bpws:source linkName="RetweetToExit"/>
+                    </bpws:sources>
+                    <tibex:inputBindings>
+                        <tibex:inputBinding
+                            expression="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xa;&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:tns=&quot;http://www.tibco.com/namespaces/tnt/plugins/twitter+24bd7012-3c97-4e4a-82f7-d92c7613c49b+Input&quot; version=&quot;2.0&quot;>&lt;xsl:param name=&quot;Listen-Tweets&quot;/>&lt;xsl:template name=&quot;TwitterPublish-input&quot; match=&quot;/&quot;>&lt;tns:PublishRetweetInput>&lt;statusId>&lt;xsl:value-of select=&quot;$Listen-Tweets/Status/id&quot;/>&lt;/statusId>&lt;/tns:PublishRetweetInput>&lt;/xsl:template>&lt;/xsl:stylesheet>" expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xslt1.0"/>
+                    </tibex:inputBindings>
+                    <tibex:config>
+                        <bwext:BWActivity
+                            activityTypeID="bw.twitter.TwitterPublish"
+                            xmlns:activityconfig="http://tns.tibco.com/bw/model/activityconfig"
+                            xmlns:bwext="http://tns.tibco.com/bw/model/core/bwext"
+                            xmlns:twitter="http://ns.tibco.com/bw/palette/twitter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                            <activityConfig>
+                                <properties name="config" xsi:type="activityconfig:EMFProperty">
+                                    <type href="http://ns.tibco.com/bw/palette/twitter#//TwitterPublish"/>
+                                    <value oAuth="OAuthProperty"
+                                    publishType="Retweet" xsi:type="twitter:TwitterPublish"/>
+                                </properties>
+                            </activityConfig>
+                        </bwext:BWActivity>
+                    </tibex:config>
+                </tibex:activityExtension>
+            </bpws:extensionActivity>
+            <bpws:exit name="Exit" tibex:xpdlId="4685305c-2141-40f1-8c73-2c26b1d35986">
+                <bpws:targets>
+                    <bpws:target linkName="AnalyzeTweetToExit_Checkforfalse"/>
+                    <bpws:target linkName="SendreplytoTweetToExit"/>
+                    <bpws:target linkName="RetweetToExit"/>
+                </bpws:targets>
+            </bpws:exit>
+        </bpws:flow>
+    </bpws:scope>
+</bpws:process>
