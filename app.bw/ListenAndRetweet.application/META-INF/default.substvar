@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<repository xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance" xmlns = "http://www.tibco.com/xmlns/repo/types/2002">
+	<globalVariables>
+		<globalVariable>
+			<name>//ListenAndRetweet///TwitterSample/TrackKeyword</name>
+			<value>Game of Six</value>
+			<deploymentSettable>false</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1397547147498</modTime>
+		</globalVariable>
+		<globalVariable>
+			<name>//ListenAndRetweet///TwitterSample/ReplyString</name>
+			<value>Thanks for your Tweet. Please check our new game &quot;Foes&quot; on battlefield.!</value>
+			<deploymentSettable>false</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1397547147498</modTime>
+		</globalVariable>
+		<globalVariable>
+			<name>//ListenAndRetweet///TwitterSample/OAuthOwnerName</name>
+			<value>johnstein1700</value>
+			<deploymentSettable>false</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1397547147498</modTime>
+		</globalVariable>
+	</globalVariables>
+</repository>
